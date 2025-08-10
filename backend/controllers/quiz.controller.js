@@ -64,3 +64,40 @@ export const deleteQuiz = async (req, res, next) => {
     next(err);
   }
 };
+
+//delete Quiz
+export const deleteQuiz = async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) {
+      return apiResponse.error(res, "Quiz not found", 404);
+    }
+
+    await Quiz.findByIdAndDelete(req.params.id);
+    return apiResponse.success(res, {}, "Quiz deleted successfully");
+  } catch (error) {
+    return apiResponse.error(res, "Failed to delete quiz", 500);
+  }
+};
+
+//update Quiz
+export const updateQuiz = async (req, res) => {
+  try {
+    const { title, description, questions } = req.body;
+    const quiz = await Quiz.findById(req.params.id);
+    
+    if (!quiz) {
+      return apiResponse.error(res, "Quiz not found", 404);
+    }
+    
+    const updatedQuiz = await Quiz.findByIdAndUpdate(
+      req.params.id,
+      { title, description, questions },
+      { new: true }
+    );
+    
+    return apiResponse.success(res, updatedQuiz, "Quiz updated successfully");
+  } catch (error) {
+    return apiResponse.error(res, "Failed to update quiz", 500);
+  }
+};

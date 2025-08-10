@@ -45,6 +45,8 @@
 
 import Attempt from "../models/attempt.model.js";
 import Quiz from "../models/quiz.model.js";
+import apiResponse from "../utils/apiResponse.js";
+import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
 export const submitAttempt = async (req, res, next) => {
   try {
@@ -80,18 +82,39 @@ export const submitAttempt = async (req, res, next) => {
         attemptId: attempt._id,
         score,
         total: quiz.questions.length,
-        answers: detailed,
-      });
-  } catch (err) {
-    next(err);
+        timeTaken,
+        answers: detailedAnswers,
+      },
+
+      "Attempt submitted"
+    );
+    // console.log(state);
+  } catch (error) {
+    return apiResponse.error(res, "Failed to submit attempt", 500);
   }
 };
 
-export const getAttemptsByQuiz = async (req, res, next) => {
+// Get all attempts (admin only)
+export const getAllAttempts = async (req, res) => {
   try {
-    const attempts = await Attempt.find({ quizId: req.params.quizId });
-    res.json(attempts);
-  } catch (err) {
-    next(err);
+    const attempts = await Attempt.find().populate('quizId', 'title');
+    
+    // Format the data to include quiz title
+    const formattedAttempts = attempts.map(attempt => {
+      return {
+        _id: attempt._id,
+        userName: attempt.userName,
+        score: attempt.score,
+        total: attempt.answers.length,
+        timeTaken: attempt.timeTaken,
+        quizTitle: attempt.quizId ? attempt.quizId.title : 'Unknown Quiz',
+        quizId: attempt.quizId ? attempt.quizId._id : null,
+        answers: attempt.answers
+      };
+    });
+    
+    return apiResponse.success(res, formattedAttempts, "Attempts fetched successfully");
+  } catch (error) {
+    return apiResponse.error(res, "Failed to fetch attempts", 500);
   }
 };
