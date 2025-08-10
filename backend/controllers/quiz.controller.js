@@ -24,3 +24,21 @@ export const getQuizbyId = async (req, res) => {
     return apiResponse.error(res, "failed to fetch quiz by Id", 500);
   }
 };
+
+//create Quiz
+export const createQuiz = async (req, res) => {
+  try {
+    const { title, description, questions } = req.body;
+
+    const newQuiz = new Quiz({
+      title,
+      description,
+      questions,
+    });
+
+    await newQuiz.save();
+    return apiResponse.success(res, newQuiz, "Quiz created succesfully");
+  } catch (error) {
+    return apiResponse.error(res, "Failed to create quiz", 500);
+  }
+};

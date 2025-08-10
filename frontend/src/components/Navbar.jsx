@@ -4,6 +4,7 @@ const Navbar = () => {
   <nav>
     <h1>Quiz App</h1>
     <Link to="/">Home</Link>
+    <Link to="/add-quiz">Add Quiz</Link>
   </nav>;
 };
 export default Navbar;
