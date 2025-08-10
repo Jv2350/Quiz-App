@@ -5,6 +5,12 @@ import QuizPage from "./pages/QuizPage";
 import ResultPage from "./pages/ResultPage";
 import Navbar from "./components/Navbar";
 import AddQuiz from "./pages/AddQuiz";
+import EditQuiz from "./pages/EditQuiz";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import AdminPanel from "./pages/AdminPanel";
+import PrivateRoute from "./components/PrivateRoute";
+import AdminRoute from "./components/AdminRoute";
 
 const App = () => {
   return (
@@ -12,10 +18,34 @@ const App = () => {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/quiz/:id" element={<QuizDetail />} />
-        <Route path="/quiz/:id/start" element={<QuizPage />} />
-        <Route path="/result" element={<ResultPage />} />
-        <Route path="/add-quiz" element={<AddQuiz />} />
+        <Route path="/quiz/:id/start" element={
+          <PrivateRoute>
+            <QuizPage />
+          </PrivateRoute>
+        } />
+        <Route path="/result" element={
+          <PrivateRoute>
+            <ResultPage />
+          </PrivateRoute>
+        } />
+        <Route path="/add-quiz" element={
+          <AdminRoute>
+            <AddQuiz />
+          </AdminRoute>
+        } />
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AdminPanel />
+          </AdminRoute>
+        } />
+        <Route path="/edit-quiz/:id" element={
+          <AdminRoute>
+            <EditQuiz />
+          </AdminRoute>
+        } />
       </Routes>
     </Router>
   );

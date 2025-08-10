@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import apiResponse from "../utils/apiResponse.js";
+import { protect, authorizeRoles } from "../middlewares/auth.middleware.js";
 
 //Register user
 export const register = async (req, res) => {
@@ -43,5 +44,15 @@ export const login = async (req, res) => {
     res.json({ token, user: { name: user.name, role: user.role } });
   } catch (error) {
     return apiResponse.error(res, "Login Failed", 500);
+  }
+};
+
+// Get all users (admin only)
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+    return apiResponse.success(res, users, "Users fetched successfully");
+  } catch (error) {
+    return apiResponse.error(res, "Failed to fetch users", 500);
   }
 };
