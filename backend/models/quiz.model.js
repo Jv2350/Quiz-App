@@ -8,11 +8,15 @@ const questionSchema = new mongoose.Schema({
 });
 
 //title,description,questions
-const quizSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: false },
-  questions: [questionSchema],
-});
+const quizSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: false },
+    questions: [questionSchema],
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  },
+  { timestamps: true }
+);
 
 const Quiz = mongoose.model("Quiz", quizSchema);
 export default Quiz;

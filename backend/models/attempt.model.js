@@ -9,13 +9,16 @@ const answerSchema = new mongoose.Schema({
 
 //attemptSchema:answers,timeTaken,score,userName,quizId
 
-const attemptSchema = new mongoose.Schema({
-  quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
-  userName: String,
-  score: Number,
-  timeTaken: Number,
-  answers: [answerSchema],
-});
+const attemptSchema = new mongoose.Schema(
+  {
+    quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
+    userName: String,
+    score: Number,
+    timeTaken: Number,
+    answers: [answerSchema],
+  },
+  { timestamps: true }
+);
 
 const Attempt = mongoose.model("Attempt", attemptSchema);
 export default Attempt;
