@@ -1,44 +1,66 @@
 import Quiz from "../models/quiz.model.js";
-import apiResponse from "../utils/apiResponse.js";
-//getAllQuizzes
-export const getAllQuizzes = async (req, res) => {
+
+export const getAllQuizzes = async (req, res, next) => {
   try {
-    const quizzes = await Quiz.find();
-    return apiResponse.success(res, quizzes, "Feteched quizzes");
-  } catch (error) {
-    return apiResponse.error(res, "Failed to fetch quizzes", 500);
+    const quizzes = await Quiz.find()
+      .select("-questions")
+      .sort({ createdAt: -1 }); // list without questions
+    res.json(quizzes);
+  } catch (err) {
+    next(err);
   }
 };
 
-//getQuizById
-
-export const getQuizbyId = async (req, res) => {
+export const getQuizById = async (req, res, next) => {
   try {
     const quiz = await Quiz.findById(req.params.id);
-    if (!quiz) {
-      return apiResponse.error(res, "Quiz not found", 404);
-    }
-
-    return apiResponse.success(res, quiz, "Fetched quiz");
-  } catch (error) {
-    return apiResponse.error(res, "failed to fetch quiz by Id", 500);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    res.json(quiz);
+  } catch (err) {
+    next(err);
   }
 };
 
-//create Quiz
-export const createQuiz = async (req, res) => {
+export const createQuiz = async (req, res, next) => {
   try {
     const { title, description, questions } = req.body;
-
-    const newQuiz = new Quiz({
+    const created = await Quiz.create({
       title,
       description,
       questions,
+      createdBy: req.user.id,
     });
+    res.status(201).json(created);
+  } catch (err) {
+    next(err);
+  }
+};
 
-    await newQuiz.save();
-    return apiResponse.success(res, newQuiz, "Quiz created succesfully");
-  } catch (error) {
-    return apiResponse.error(res, "Failed to create quiz", 500);
+export const updateQuiz = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+
+    // Optional: ensure only admin or creator edits
+    // if (req.user.role !== 'admin' && quiz.createdBy.toString() !== req.user.id) {...}
+
+    quiz.title = req.body.title ?? quiz.title;
+    quiz.description = req.body.description ?? quiz.description;
+    quiz.questions = req.body.questions ?? quiz.questions;
+    await quiz.save();
+    res.json(quiz);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteQuiz = async (req, res, next) => {
+  try {
+    const quiz = await Quiz.findById(req.params.id);
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    await quiz.remove();
+    res.json({ message: "Quiz removed" });
+  } catch (err) {
+    next(err);
   }
 };

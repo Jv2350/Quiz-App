@@ -1,20 +1,32 @@
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const ResultPage = () => {
+export default function ResultPage() {
   const { state } = useLocation();
-  const navigate = useNavigate();
+  const nav = useNavigate();
+  if (!state?.result) return <div>No result</div>;
 
-  if (!state) return <p>No result data.</p>;
+  const { score, total, answers, timeTaken } = state.result;
   return (
-    <div>
-      <h2>Quiz Result</h2>
+    <div style={{ padding: 20 }}>
+      <h2>Result</h2>
       <p>
-        Score: {state.data.score}/{state.data.total}
+        Score: {score} / {total}
       </p>
-      <p>Time Taken: {state.data.timeTaken} seconds</p>
-      <button onClick={() => navigate("/")}>Back to Home</button>
+      <p>Time: {timeTaken} s</p>
+
+      <h3>Answers</h3>
+      {answers.map((a, i) => (
+        <div key={i} style={{ marginBottom: 8 }}>
+          <div>
+            Question #{a.questionIndex + 1} —{" "}
+            <strong>{a.correct ? "Correct" : "Wrong"}</strong>
+          </div>
+          <div>Selected: {a.selectedOption}</div>
+        </div>
+      ))}
+
+      <button onClick={() => nav("/")}>Back Home</button>
     </div>
   );
-};
-
-export default ResultPage;
+}

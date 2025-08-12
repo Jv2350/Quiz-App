@@ -1,169 +1,158 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "../api/api";
 
 export default function AdminDashboard() {
   const [quizzes, setQuizzes] = useState([]);
+  const [editing, setEditing] = useState(null);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState([
-    { question: "", options: ["", "", "", ""], correctAnswer: 0 },
+    { questionText: "", options: ["", "", "", ""], correctOption: 0 },
   ]);
-  const [editingQuiz, setEditingQuiz] = useState(null);
 
-  const token = localStorage.getItem("token");
-
-  const fetchQuizzes = async () => {
-    const { data } = await api.get("/quizzes", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  const fetch = async () => {
+    const { data } = await api.get("/quizzes");
     setQuizzes(data);
   };
 
   useEffect(() => {
-    fetchQuizzes();
+    fetch();
   }, []);
 
-  const handleQuestionChange = (index, field, value) => {
-    const updated = [...questions];
-    updated[index][field] = value;
-    setQuestions(updated);
-  };
-
-  const handleOptionChange = (qIndex, oIndex, value) => {
-    const updated = [...questions];
-    updated[qIndex].options[oIndex] = value;
-    setQuestions(updated);
-  };
-
   const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      { question: "", options: ["", "", "", ""], correctAnswer: 0 },
+    setQuestions((prev) => [
+      ...prev,
+      { questionText: "", options: ["", "", "", ""], correctOption: 0 },
     ]);
   };
 
-  const handleSubmit = async () => {
-    const payload = { title, questions };
-    if (editingQuiz) {
-      await api.put(`/quizzes/${editingQuiz}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } else {
-      await api.post("/quizzes", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    }
-    setTitle("");
-    setQuestions([
-      { question: "", options: ["", "", "", ""], correctAnswer: 0 },
-    ]);
-    setEditingQuiz(null);
-    fetchQuizzes();
-  };
-
-  const handleEdit = (quiz) => {
-    setTitle(quiz.title);
-    setQuestions(quiz.questions);
-    setEditingQuiz(quiz._id);
-  };
-
-  const handleDelete = async (id) => {
-    await api.delete(`/quizzes/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
+  const updateQuestion = (idx, field, value) => {
+    setQuestions((prev) => {
+      const copy = [...prev];
+      copy[idx][field] = value;
+      return copy;
     });
-    fetchQuizzes();
+  };
+
+  const updateOption = (qIdx, oIdx, val) => {
+    setQuestions((prev) => {
+      const copy = [...prev];
+      copy[qIdx].options[oIdx] = val;
+      return copy;
+    });
+  };
+
+  const startEdit = async (id) => {
+    const res = await api.get(`/quizzes/${id}`);
+    const quiz = res.data;
+    setEditing(id);
+    setTitle(quiz.title);
+    setDescription(quiz.description || "");
+    setQuestions(
+      quiz.questions.map((q) => ({
+        questionText: q.questionText,
+        options: q.options,
+        correctOption: q.correctOption,
+      }))
+    );
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setTitle("");
+    setDescription("");
+    setQuestions([
+      { questionText: "", options: ["", "", "", ""], correctOption: 0 },
+    ]);
+  };
+
+  const saveQuiz = async () => {
+    const payload = { title, description, questions };
+    if (editing) {
+      await api.put(`/quizzes/${editing}`, payload);
+    } else {
+      await api.post("/quizzes", payload);
+    }
+    cancelEdit();
+    fetch();
+  };
+
+  const removeQuiz = async (id) => {
+    if (!confirm("Delete quiz?")) return;
+    await api.delete(`/quizzes/${id}`);
+    fetch();
   };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        Admin Dashboard - Manage Quizzes
-      </h1>
+    <div style={{ padding: 20 }}>
+      <h2>Admin Dashboard</h2>
 
-      {/* Quiz Form */}
-      <div className="bg-gray-100 p-4 rounded mb-6">
+      <div style={{ border: "1px solid #ddd", padding: 12, marginBottom: 12 }}>
         <input
-          type="text"
-          placeholder="Quiz Title"
-          className="border p-2 w-full mb-4"
+          placeholder="Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
+        <br />
+        <textarea
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <br />
+        <h4>Questions</h4>
         {questions.map((q, qi) => (
-          <div key={qi} className="mb-4 p-3 border rounded">
+          <div
+            key={qi}
+            style={{ padding: 8, border: "1px dashed #ccc", marginBottom: 8 }}
+          >
             <input
-              type="text"
               placeholder={`Question ${qi + 1}`}
-              className="border p-2 w-full mb-2"
-              value={q.question}
+              value={q.questionText}
               onChange={(e) =>
-                handleQuestionChange(qi, "question", e.target.value)
+                updateQuestion(qi, "questionText", e.target.value)
               }
             />
+            <br />
             {q.options.map((opt, oi) => (
               <input
                 key={oi}
-                type="text"
                 placeholder={`Option ${oi + 1}`}
-                className="border p-2 w-full mb-1"
                 value={opt}
-                onChange={(e) => handleOptionChange(qi, oi, e.target.value)}
+                onChange={(e) => updateOption(qi, oi, e.target.value)}
               />
             ))}
-            <label className="block mt-2">Correct Answer (index):</label>
-            <input
-              type="number"
-              min="0"
-              max="3"
-              className="border p-2 w-full"
-              value={q.correctAnswer}
-              onChange={(e) =>
-                handleQuestionChange(
-                  qi,
-                  "correctAnswer",
-                  Number(e.target.value)
-                )
-              }
-            />
+            <div>
+              <label>Correct Option Index:</label>
+              <input
+                type="number"
+                min={0}
+                max={q.options.length - 1}
+                value={q.correctOption}
+                onChange={(e) =>
+                  updateQuestion(qi, "correctOption", Number(e.target.value))
+                }
+              />
+            </div>
           </div>
         ))}
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded"
-          onClick={addQuestion}
-        >
-          Add Question
+        <button onClick={addQuestion}>Add question</button>
+        <button onClick={saveQuiz}>
+          {editing ? "Update Quiz" : "Create Quiz"}
         </button>
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
-          onClick={handleSubmit}
-        >
-          {editingQuiz ? "Update Quiz" : "Create Quiz"}
-        </button>
+        {editing && <button onClick={cancelEdit}>Cancel</button>}
       </div>
 
-      {/* Quiz List */}
-      <h2 className="text-xl font-bold mb-2">Existing Quizzes</h2>
-      {quizzes.map((quiz) => (
+      <h3>Existing Quizzes</h3>
+      {quizzes.map((q) => (
         <div
-          key={quiz._id}
-          className="border p-4 rounded mb-2 flex justify-between"
+          key={q._id}
+          style={{ border: "1px solid #eee", padding: 8, marginBottom: 8 }}
         >
+          <strong>{q.title}</strong> <span>({q._id})</span>
           <div>
-            <h3 className="font-semibold">{quiz.title}</h3>
-            <p>{quiz.questions.length} Questions</p>
-          </div>
-          <div>
-            <button
-              className="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
-              onClick={() => handleEdit(quiz)}
-            >
-              Edit
-            </button>
-            <button
-              className="bg-red-500 text-white px-3 py-1 rounded"
-              onClick={() => handleDelete(quiz._id)}
-            >
-              Delete
-            </button>
+            <button onClick={() => startEdit(q._id)}>Edit</button>
+            <button onClick={() => removeQuiz(q._id)}>Delete</button>
           </div>
         </div>
       ))}

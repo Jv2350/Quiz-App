@@ -1,10 +1,25 @@
 import React from "react";
-import { Link } from "react-router-dom";
-const Navbar = () => {
-  <nav>
-    <h1>Quiz App</h1>
-    <Link to="/">Home</Link>
-    <Link to="/add-quiz">Add Quiz</Link>
-  </nav>;
-};
-export default Navbar;
+import { Link, useNavigate } from "react-router-dom";
+
+export default function Navbar() {
+  const navigate = useNavigate();
+  const role = localStorage.getItem("role");
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
+  return (
+    <nav style={{ padding: 12, borderBottom: "1px solid #ddd", display: "flex", gap: 12 }}>
+      <Link to="/">Home</Link>
+      {role === "admin" && <Link to="/admin-dashboard">Admin</Link>}
+      {role === "user" && <Link to="/user-dashboard">Dashboard</Link>}
+      <div style={{ marginLeft: "auto" }}>
+        <Link to="/login">Login</Link>
+        <button onClick={logout} style={{ marginLeft: 8 }}>Logout</button>
+      </div>
+    </nav>
+  );
+}

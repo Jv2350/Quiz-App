@@ -1,27 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import api from "../api/api";
-import { Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
-const QuizDetail = () => {
+export default function QuizDetail() {
   const { id } = useParams();
   const [quiz, setQuiz] = useState(null);
-  useEffect(() => {
-    const fetchQuiz = async () => {
-      const res = await api.get(`/quizzes/${id}`);
-      setQuiz(res.data.data);
-    };
-    fetchQuiz();
+  const nav = useNavigate();
+
+  useEffect(()=> {
+    api.get(`/quizzes/${id}`).then(res => setQuiz(res.data));
   }, [id]);
-  if (!quiz) return <p>Loading..........</p>;
+
+  if (!quiz) return <div>Loading...</div>;
 
   return (
-    <div>
+    <div style={{ padding: 20 }}>
       <h2>{quiz.title}</h2>
       <p>{quiz.description}</p>
-      <Link to={`/quiz/${quiz._id}/start`}>Start Quiz</Link>
+      <p>{quiz.questions.length} questions</p>
+      <button onClick={() => nav(`/quiz/${id}/start`)}>Start Quiz</button>
     </div>
   );
-};
-
-export default QuizDetail;
+}
