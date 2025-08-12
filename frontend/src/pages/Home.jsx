@@ -1,13 +1,35 @@
+<<<<<<< HEAD
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
 import { Link } from "react-router-dom";
 
 export default function Home() {
+=======
+import React, { useState, useEffect } from "react";
+import api from "../api/api";
+import { Box, Heading, Text, Button, Grid, GridItem, Badge } from "@chakra-ui/react";
+
+const Home = () => {
+>>>>>>> 7ce973d7002e691fca38ed6f11f346a0a40c3d96
   const [quizzes, setQuizzes] = useState([]);
+
   useEffect(() => {
+<<<<<<< HEAD
     api.get("/quizzes").then((res) => setQuizzes(res.data));
+=======
+    const fetchQuizzes = async () => {
+      try {
+        const res = await api.get("/quizzes");
+        setQuizzes(res.data.data);
+      } catch (error) {
+        console.error("Error fetching quizzes:", error);
+      }
+    };
+    fetchQuizzes();
+>>>>>>> 7ce973d7002e691fca38ed6f11f346a0a40c3d96
   }, []);
   return (
+<<<<<<< HEAD
     <div style={{ padding: 20 }}>
       <h2>All Quizzes</h2>
       {quizzes.map((q) => (
@@ -21,5 +43,43 @@ export default function Home() {
         </div>
       ))}
     </div>
+=======
+    <Box p={8} bg="gray.50" minH="100vh">
+      <Heading textAlign="center" mb={8} color="teal.600">
+        Available Quizzes
+      </Heading>
+
+      <Grid templateColumns={["1fr", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={6}>
+        {quizzes.map((quiz) => (
+          <GridItem
+            key={quiz._id}
+            p={5}
+            bg="white"
+            borderRadius="md"
+            boxShadow="md"
+            _hover={{ boxShadow: "lg", transform: "scale(1.02)" }}
+            transition="all 0.2s"
+          >
+            <Heading size="md" mb={2} color="teal.500">
+              {quiz.title}
+            </Heading>
+            <Badge colorScheme="purple" mb={3}>
+              {quiz.category || "General"}
+            </Badge>
+            <Text noOfLines={3} mb={4}>
+              {quiz.description || "No description available."}
+            </Text>
+            <Button
+              colorScheme="teal"
+              size="sm"
+              onClick={() => alert(`Starting quiz: ${quiz.title}`)}
+            >
+              Start Quiz
+            </Button>
+          </GridItem>
+        ))}
+      </Grid>
+    </Box>
+>>>>>>> 7ce973d7002e691fca38ed6f11f346a0a40c3d96
   );
 }

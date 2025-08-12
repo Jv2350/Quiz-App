@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/api";
-import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -18,31 +18,70 @@ import {
   CardHeader,
   Divider,
   useToast,
+  Spinner,
+  Center,
   Text
 } from "@chakra-ui/react";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 
-const AddQuiz = () => {
+const EditQuiz = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  
+  const [isLoading, setIsLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [questions, setQuestions] = useState([
-    { questionText: "", options: ["", "", "", ""], correctOption: 0 },
-  ]);
+  const [questions, setQuestions] = useState([]);
+  
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        setIsLoading(true);
+        const res = await api.get(`/quizzes/${id}`);
+        const quiz = res.data.data;
+        
+        setTitle(quiz.title);
+        setDescription(quiz.description || "");
+        setQuestions(quiz.questions.map(q => ({
+          _id: q._id,
+          questionText: q.questionText,
+          options: [...q.options],
+          correctOption: q.correctOption
+        })));
+      } catch (error) {
+        toast({
+          title: "Error fetching quiz",
+          description: error.response?.data?.message || "Could not load quiz data",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+        navigate("/admin");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchQuiz();
+  }, [id, navigate, toast]);
+  
   const handleQuestionChange = (index, field, value) => {
-    const updated = [...questions];
-    if (field === "questionText") updated[index][field] = value;
-    else updated[index].options[field] = value;
-    setQuestions(updated);
+    const updatedQuestions = [...questions];
+    if (field === "questionText") {
+      updatedQuestions[index].questionText = value;
+    } else {
+      updatedQuestions[index].options[field] = value;
+    }
+    setQuestions(updatedQuestions);
   };
-
+  
   const handleCorrectOptionChange = (index, value) => {
-    const updated = [...questions];
-    updated[index].correctOption = parseInt(value);
-    setQuestions(updated);
+    const updatedQuestions = [...questions];
+    updatedQuestions[index].correctOption = parseInt(value);
+    setQuestions(updatedQuestions);
   };
-
+  
   const addQuestion = () => {
     setQuestions([
       ...questions,
@@ -55,7 +94,7 @@ const AddQuiz = () => {
     updatedQuestions.splice(index, 1);
     setQuestions(updatedQuestions);
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -99,10 +138,10 @@ const AddQuiz = () => {
     }
     
     try {
-      await api.post("/quizzes", { title, description, questions });
+      await api.put(`/quizzes/${id}`, { title, description, questions });
       toast({
-        title: "Quiz created",
-        description: "The quiz has been successfully created",
+        title: "Quiz updated",
+        description: "The quiz has been successfully updated",
         status: "success",
         duration: 3000,
         isClosable: true,
@@ -110,7 +149,7 @@ const AddQuiz = () => {
       navigate("/admin");
     } catch (error) {
       toast({
-        title: "Error creating quiz",
+        title: "Error updating quiz",
         description: error.response?.data?.message || "Something went wrong",
         status: "error",
         duration: 5000,
@@ -118,10 +157,25 @@ const AddQuiz = () => {
       });
     }
   };
+  
+  if (isLoading) {
+    return (
+      <Center h="100vh">
+        <Spinner 
+          thickness="4px"
+          speed="0.65s"
+          emptyColor="gray.200"
+          color="teal.500"
+          size="xl"
+        />
+      </Center>
+    );
+  }
+  
   return (
     <Box p={8} bg="gray.50" minH="100vh">
       <VStack spacing={8} align="stretch">
-        <Heading textAlign="center" color="teal.600">Create New Quiz</Heading>
+        <Heading textAlign="center" color="teal.600">Edit Quiz</Heading>
         
         <Card bg="white" shadow="md">
           <CardHeader>
@@ -240,7 +294,7 @@ const AddQuiz = () => {
                 width="full"
                 mt={4}
               >
-                Create Quiz
+                Update Quiz
               </Button>
             </VStack>
           </CardBody>
@@ -250,4 +304,4 @@ const AddQuiz = () => {
   );
 };
 
-export default AddQuiz;
+export default EditQuiz;
