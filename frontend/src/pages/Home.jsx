@@ -5,6 +5,7 @@ import { Box, Heading, Text, Button, Grid, GridItem, Badge } from "@chakra-ui/re
 const Home = () => {
   const [quizzes, setQuizzes] = useState([]);
 
+
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
