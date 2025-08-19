@@ -36,34 +36,34 @@ export const createQuiz = async (req, res, next) => {
   }
 };
 
-export const updateQuiz = async (req, res, next) => {
-  try {
-    const quiz = await Quiz.findById(req.params.id);
-    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+// export const updateQuiz = async (req, res, next) => {
+//   try {
+//     const quiz = await Quiz.findById(req.params.id);
+//     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
-    // Optional: ensure only admin or creator edits
-    // if (req.user.role !== 'admin' && quiz.createdBy.toString() !== req.user.id) {...}
+//     // Optional: ensure only admin or creator edits
+//     // if (req.user.role !== 'admin' && quiz.createdBy.toString() !== req.user.id) {...}
 
-    quiz.title = req.body.title ?? quiz.title;
-    quiz.description = req.body.description ?? quiz.description;
-    quiz.questions = req.body.questions ?? quiz.questions;
-    await quiz.save();
-    res.json(quiz);
-  } catch (err) {
-    next(err);
-  }
-};
+//     quiz.title = req.body.title ?? quiz.title;
+//     quiz.description = req.body.description ?? quiz.description;
+//     quiz.questions = req.body.questions ?? quiz.questions;
+//     await quiz.save();
+//     res.json(quiz);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-export const deleteQuiz = async (req, res, next) => {
-  try {
-    const quiz = await Quiz.findById(req.params.id);
-    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
-    await quiz.remove();
-    res.json({ message: "Quiz removed" });
-  } catch (err) {
-    next(err);
-  }
-};
+// export const deleteQuiz = async (req, res, next) => {
+//   try {
+//     const quiz = await Quiz.findById(req.params.id);
+//     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+//     await quiz.remove();
+//     res.json({ message: "Quiz removed" });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 //delete Quiz
 export const deleteQuiz = async (req, res) => {

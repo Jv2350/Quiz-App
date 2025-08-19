@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/api";
-import { Box, Heading, Text, Button, Grid, GridItem, Badge } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  Text,
+  Button,
+  Grid,
+  GridItem,
+  Badge,
+} from "@chakra-ui/react";
 
 const Home = () => {
   const [quizzes, setQuizzes] = useState([]);
-
 
   useEffect(() => {
     const fetchQuizzes = async () => {
@@ -23,7 +30,10 @@ const Home = () => {
         Available Quizzes
       </Heading>
 
-      <Grid templateColumns={["1fr", "repeat(2, 1fr)", "repeat(3, 1fr)"]} gap={6}>
+      <Grid
+        templateColumns={["1fr", "repeat(2, 1fr)", "repeat(3, 1fr)"]}
+        gap={6}
+      >
         {quizzes.map((quiz) => (
           <GridItem
             key={quiz._id}
@@ -55,4 +65,6 @@ const Home = () => {
       </Grid>
     </Box>
   );
-}
+};
+
+export default Home;
